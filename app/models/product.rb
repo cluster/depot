@@ -4,6 +4,19 @@ class Product < ActiveRecord::Base
 	validates :title, uniqueness: true
 	validates :image_url, allow_blank: true, format: {with: %r{\.(gif|jpg|png)\Z}i, message: 'must be a url for gif, jpg or png image'}
 
+	has_many :line_items
+	before_destroy :ensure_not_referenced_by_any_line_item
+
+	private
+	def ensure_not_referenced_by_any_line_item 
+		if line_items.empty?
+			return true
+		else
+			errors.add(:base, 'Line items present')
+			return false
+		end
+	end
+
 	def self.latest
 		Product.order(:updated_at).last
 	end
